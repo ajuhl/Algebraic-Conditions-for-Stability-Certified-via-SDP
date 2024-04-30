@@ -34,10 +34,10 @@ syms y real
 % Create E-poly
 E(y) = collect(expand(D(1i*y)*D(-1i*y)-N(1i*y)*N(-1i*y)));
 
-% Standardize E-poly
+disp('Check sign of E-polynomial coefficients')
 k=coeffs(E(y));
-logical(k>=0);
-F=diag(k./k(end))
+disp(logical(k>=0))
+P=diag(k)
 
 %% Clear Misc. Vars
-clearvars -except F
+clearvars -except P

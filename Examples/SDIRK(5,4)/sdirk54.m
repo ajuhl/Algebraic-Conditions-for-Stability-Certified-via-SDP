@@ -62,13 +62,13 @@ Nd = matlabFunction(N);
 cvx_precision high 
 cvx_begin sdp quiet
     variable eta
-    maximize eta
+    minimize 1
     subject to
         Pd+Nd(eta)>=0;
 cvx_end
 
 %Symbolic LDL factorization of F
-etaF=sym(eta)
+etaF=round(sym(eta),-1)
 F=P+Ns(etaF)
 [LF,DF]=ldls(F)
 
@@ -77,6 +77,7 @@ F=P+Ns(etaF)
 
 %Verify A-stability conditions
 % logical(expand(E(y)-y^6*ys'*F*ys)==0)
+% all(logical(diag(DF)>=0))
 
 %% CSTW Conditions
 %Parameterize Ne=0
