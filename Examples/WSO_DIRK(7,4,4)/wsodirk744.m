@@ -1,4 +1,4 @@
-%Initialize Variables
+%% Initialize Variables
 A=[sym('1290066345260422/10000000000000000')   0 0 0 0 0 0
    sym('3315354455306989/10000000000000000')   sym('1177478680001996/10000000000000000')    0 0 0 0 0
    sym('-8009819642882672/100000000000000000') sym('-2408450965101765/1000000000000000000') sym('9242630648045402/100000000000000000')  0 0 0 0
@@ -17,56 +17,55 @@ end
 disp('Check tall tree conditions')
 fact = sym(factorial((1:p)'));
 fact_recip = 1./fact;
-disp(logical(M(:,1:p)'*b==fact_recip)')
+disp(logical(M(:,1:p)'*b == fact_recip)')
 
 %% Strategy 1
 syms z
 syms y real
 % Determine N and D functions
-[N(z),D(z)] = numden(1+z*b'*(I-z*A)^(-1)*e);
+[N(z),D(z)] = numden(1 + z*b'*(I - z*A)^(-1)*e);
 
 % Create E-poly
-E(y) = collect(expand(D(1i*y)*D(-1i*y)-N(1i*y)*N(-1i*y)));
+E(y) = collect(expand(D(1i*y)*D(-1i*y) - N(1i*y)*N(-1i*y)));
 
 disp('Check sign of E-polynomial coefficients')
-k=coeffs(E(y));
-disp(logical(k>=0))
+k = coeffs(E(y));
+disp(logical(k >= 0))
 
 % Standardize E-polynomial
 kend = k(end);
-k=k./kend;
-P = diag(k);
-Pd=double(P);
-m = length(P);
-dof=nchoosek(m-1,2);
+P = diag(k./kend);
+Pd = double(P);
+m = length(Pd);
+dof = nchoosek(m-1,2);
 
-%Create monomial vector
+% Create monomial vector
 ys = 1;
-for i=1:m-1
+for i = 1:m-1
     ys = [ys;y^i];
 end
 
 % Define N such that y'Ny==0
 n = triu(sym('n',[m m],'real'));
-N=sym(zeros(m,m));
-Im=eye(m);
-for i=1:m-2
-    for j=i+2:m
-        % l=m*(i-1)-.5*i*(i+3)+j
-        c=ceil((i+j)/2);
-        f=floor((i+j)/2);
-        N = N + n(i,j)*(Im(:,i)*Im(:,j)'+Im(:,j)*Im(:,i)'-Im(:,f)*Im(:,c)'-Im(:,c)*Im(:,f)');
+N = sym(zeros(m,m));
+Im = eye(m);
+for i = 1:m-2
+    for j = i+2:m
+        % l = m*(i-1) - .5*i*(i+3) + j
+        c = ceil((i+j)/2);
+        f = floor((i+j)/2);
+        N = N + n(i,j)*(Im(:,i)*Im(:,j)' + Im(:,j)*Im(:,i)' - Im(:,f)*Im(:,c)' - Im(:,c)*Im(:,f)');
     end
 end
 
-%Create symbolic function for N
-inputs = sort(n(triu(n,2)~=0));
-Ns=symfun(N,inputs);
+% Create symbolic function for N
+inputs = sort(n(triu(n,2) ~= 0));
+Ns = symfun(N,inputs);
 
-%Create double precision function for N
+% Create double precision function for N
 Nd = matlabFunction(N);
 
-%E-poly SDP
+% E-polynomial SDP
 cvx_precision high
 cvx_begin sdp quiet
     variable gam
@@ -74,21 +73,21 @@ cvx_begin sdp quiet
     minimize 1
     subject to
         in = num2cell(eta);
-        Pd+Nd(in{:})>=0;
+        (Pd+Nd(in{:}))*1e-10 >= 0;
 cvx_end
 
 % Symbolic LDL factorization of F
-etaF=sym(round(eta,-1))'
-in=sym2cell(etaF);
-F=P+Ns(in{:})
-[LF,DF]=ldls(F)
+etaF = sym(round(eta,-1))'
+in = sym2cell(etaF);
+F = P + Ns(in{:})
+[LF,DF] = ldls(F)
 
 %% Verify LDL factoriztion
-% all(all(logical(F==LF*DF*LF')))
+% all(all(logical(F == LF*DF*LF')))
 
-%Verify A-stability conditions
-% logical(expand(E(y)-kend*y^2*ys'*F*ys)==0)
-% all(logical(diag(DF)>=0))
+% Verify A-stability conditions
+% logical(expand(E(y) - kend*y^2*ys'*F*ys) == 0)
+% all(logical(diag(DF) >= 0))
 
 %% Clear Misc. Vars
 clearvars -except etaF F LF DF
@@ -116,7 +115,7 @@ function [L,D] = ldls(M)
             for k = 1:j-1
                 sumL = sumL + L(i,k)*L(j,k)*D(k,k);
             end
-            if(D(j,j)~=0)
+            if(D(j,j) ~= 0)
                 L(i,j) = (M(i,j) - sumL)/D(j,j);
             end
         end

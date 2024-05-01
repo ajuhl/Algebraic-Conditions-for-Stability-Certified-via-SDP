@@ -1,4 +1,4 @@
-%Initialize Variables
+%% Initialize Variables
 A=[sym('2345371908646273/10000000000000000')   0 0 0 0 0 0 0 0 0 0 0
    sym('6874344413888787/10000000000000000')   sym('5515270980695153/100000000000000000')  0 0 0 0 0 0 0 0 0 0
    sym('-1183552669539587/10000000000000000')  sym('5463563002913454/1000000000000000000') sym('1458584459918280/10000000000000000')   0 0 0 0 0 0 0 0 0
@@ -13,7 +13,7 @@ A=[sym('2345371908646273/10000000000000000')   0 0 0 0 0 0 0 0 0 0 0
    sym('-7433675378768276/10000000000000000')  sym('1490594423766965/10000000000000000')   sym('-2042884056742363/100000000000000000') sym('8565329438087443/10000000000000000000') sym('1357261590983184/1000000000000000')    sym('2067512027776675/1000000000000000000') sym('9836884265759428/100000000000000000') sym('-1357936974507222/100000000000000000')  sym('-5428992174996300/100000000000000000') sym('-3803299038293005/100000000000000000') sym('-9150525836295019/1000000000000000000') sym('2712352651694511/10000000000000000')];
 
 s = length(A);  p = 5;  % number of stages order of method
-b = A(s,:)';    B=diag(b);
+b = A(s,:)';    B = diag(b);
 e = ones(s,1);  I = eye(s);
 M = e;
 for i = 1:s-1
@@ -23,21 +23,21 @@ end
 disp('Check tall tree conditions')
 fact = sym(factorial((1:p)'));
 fact_recip = 1./fact;
-disp(logical(M(:,1:p)'*b==fact_recip)')
+disp(logical(M(:,1:p)'*b == fact_recip)')
 
 %% Strategy 1
 syms z
 syms y real
 % Determine N and D functions
-[N(z),D(z)] = numden(1+z*b'*(I-z*A)^(-1)*e);
+[N(z),D(z)] = numden(1 + z*b'*(I - z*A)^(-1)*e);
 
 % Create E-poly
-E(y) = collect(expand(D(1i*y)*D(-1i*y)-N(1i*y)*N(-1i*y)));
+E(y) = collect(expand(D(1i*y)*D(-1i*y) - N(1i*y)*N(-1i*y)));
 
 disp('Check sign of E-polynomial coefficients')
-k=coeffs(E(y));
-disp(logical(k>=0))
-P=diag(k)
+k = coeffs(E(y));
+disp(logical(k >= 0))
+P = diag(k)
 
 %% Clear Misc. Vars
 clearvars -except P
